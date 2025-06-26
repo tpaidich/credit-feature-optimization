@@ -1,0 +1,299 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -180,
+        80
+      ],
+      "id": "ae6d86f4-81af-4890-8800-21819aa86d6b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/data/bank_dataset.csv",
+        "options": {
+          "fileName": "bank_dataset.csv"
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        40,
+        80
+      ],
+      "id": "8120a0cb-290d-4c03-87dc-5ba72507cac4",
+      "name": "Read/Write Files from Disk",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8002/downturn-summary",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        80
+      ],
+      "id": "8a18233a-5f2b-4942-8c5f-743beb62f3ef",
+      "name": "HTTP Request",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a financial analyst.\n\nHere are some statistics about economic downturns:\n\nDownturn period average default rate: {{ $json.downturn_avg_default_rate }}\nBaseline (non-downturn) default rate: {{ $json.baseline_default_rate }}\nWorst downturn date: {{ $json.worst_downturn_date }}\nWorst default rate during downturn: {{ $json.worst_downturn_default }}\n\nPlease explain:\n- What these numbers suggest about the relationship between downturns and default behavior.\n- Why identifying the worst downturn is useful.\n- How a modeler might use this in stress testing or model calibration.\n\nKeep the explanation clear and concise for a risk management audience.",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=You are a data scientist.\n\nThe following is a list of feature importances from a credit risk model:\n\n{{ $json.importances.map(i => `${i.feature}: ${i.importance.toFixed(5)}`).join(\"\\n\") }}\n\nFor each feature:\n- Explain why it might influence default risk\n- Describe what a high or low value implies\n- Keep explanations clear and concise for a business audience\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        480,
+        80
+      ],
+      "id": "25df606d-bdd1-44d9-8bb3-13eff2850844",
+      "name": "Basic LLM Chain",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-1.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        580,
+        300
+      ],
+      "id": "634a0ebf-25b0-43f4-9c5d-46ff10b6ca09",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "7unRmudEqMaGf3qU",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "text",
+        "binaryPropertyName": "downturn_summary",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        860,
+        80
+      ],
+      "id": "7fe2a905-9f3b-4c9b-b9a1-4ec630514ce7",
+      "name": "Convert to File",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/data/downturn_summary",
+        "dataPropertyName": "downturn_summary",
+        "options": {
+          "append": false
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1080,
+        80
+      ],
+      "id": "162ef5c6-745c-4b27-bd08-be34db42ca94",
+      "name": "Read/Write Files from Disk1"
+    },
+    {
+      "parameters": {
+        "content": "Load CSV file containing loan/customer data",
+        "height": 100,
+        "width": 180,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "25e09dee-a5e1-4d9f-a839-28e5197a22f8",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Sends CSV to FastAPI to compute downturn statistics",
+        "height": 100,
+        "width": 180,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "id": "c5769042-1ac2-4087-a5e5-5734c23d7877",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Asks Gemini to interpret model results for business",
+        "height": 100,
+        "width": 180,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        500,
+        0
+      ],
+      "id": "d11e33ce-42d3-40d0-bc6a-1b7642abb97d",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "Converts results to text file",
+        "height": 100,
+        "width": 180,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        820,
+        0
+      ],
+      "id": "cf45d93f-0591-4cc8-b127-d808a34e1825",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "Saves file to local disk",
+        "height": 100,
+        "width": 180,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "50a33f9b-e6d3-4f61-8d69-60b9ef6e8827",
+      "name": "Sticky Note4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d928f882-6b70-4322-8db2-3210326537ea",
+  "meta": {
+    "instanceId": "0727d2a42465e9fb3821554abb8f1eb3d2b38b5e54ecab15a35f94639ab1c795"
+  },
+  "id": "jWrPGh4tyEGN2VQO",
+  "tags": []
+}

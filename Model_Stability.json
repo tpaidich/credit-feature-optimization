@@ -1,0 +1,299 @@
+{
+  "name": "Model Stability",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -180,
+        80
+      ],
+      "id": "8dc16d56-aea6-4906-9567-250ec8de35b5",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/data/bank_dataset.csv",
+        "options": {
+          "fileName": "bank_dataset.csv"
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        40,
+        80
+      ],
+      "id": "ba3b7674-307c-428c-9150-442e9eb5e09b",
+      "name": "Read/Write Files from Disk",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8003/model-stability",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        80
+      ],
+      "id": "247b2c4e-b574-4639-9d5c-d1bf70bee600",
+      "name": "HTTP Request",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a financial risk analyst.\n\nHere are the results from backtesting the longitudinal stability of a credit risk model:\n\n- Number of periods flagged as unstable: {{ $json.summary.periods_flagged }}\n- Most unstable month: {{ $json.summary.most_unstable_month }}\n- Least unstable month: {{ $json.summary.least_unstable_month }}\n- Maximum rolling standard deviation: {{ $json.summary.max_std }}\n- Minimum rolling standard deviation: {{ $json.summary.min_std }}\n\nPlease write a monitoring update that:\n- Summarizes when the model was most and least stable\n- Explains what the volatility metrics suggest about the model’s consistency\n- Describes why the number of flagged periods might matter in long-term validation\n- Advises what a model governance team might do if too many unstable months appear\n\nKeep the explanation clear, professional, and appropriate for a risk management audience.\n",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=You are a financial risk analyst.\n\nHere are the results from backtesting the longitudinal stability of a credit risk model:\n\n- Number of periods flagged as unstable: {{ $json.summary.periods_flagged }}\n- Most unstable month: {{ $json.summary.most_unstable_month }}\n- Least unstable month: {{ $json.summary.least_unstable_month }}\n- Maximum rolling standard deviation: {{ $json.summary.max_std }}\n- Minimum rolling standard deviation: {{ $json.summary.min_std }}\n\nPlease write a monitoring update that:\n- Summarizes when the model was most and least stable\n- Explains what the volatility metrics suggest about the model’s consistency\n- Describes why the number of flagged periods might matter in long-term validation\n- Advises what a model governance team might do if too many unstable months appear\n\nKeep the explanation clear, professional, and appropriate for a risk management audience.\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        480,
+        80
+      ],
+      "id": "9115382a-461c-4c0a-badb-75d960f4f797",
+      "name": "Basic LLM Chain",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-1.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        580,
+        300
+      ],
+      "id": "db3fa6d4-c338-49b9-9bb8-8f403e1988f3",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "7unRmudEqMaGf3qU",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "text",
+        "binaryPropertyName": "model_stability",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        860,
+        80
+      ],
+      "id": "e8438671-8100-4ae9-8384-c3180024b1c3",
+      "name": "Convert to File",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/data/model_stability",
+        "dataPropertyName": "model_stability",
+        "options": {
+          "append": false
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1080,
+        80
+      ],
+      "id": "db0da18a-abe2-472e-8be0-2f382dc1ebe2",
+      "name": "Read/Write Files from Disk1"
+    },
+    {
+      "parameters": {
+        "content": "Load CSV file containing loan/customer data",
+        "height": 100,
+        "width": 180,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "228f1425-47d9-4bc2-8333-1d9780c63c06",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Sends CSV to FastAPI to compute model stability",
+        "height": 100,
+        "width": 180,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "id": "60606984-451d-4578-a184-cb465483724a",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Asks Gemini to interpret model results for business",
+        "height": 100,
+        "width": 180,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        500,
+        0
+      ],
+      "id": "43c8b90c-70e1-45fe-965a-484a2339ed29",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "Converts results to text file",
+        "height": 100,
+        "width": 180,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        820,
+        0
+      ],
+      "id": "7f2e6746-4ad7-4946-969d-f22e5c845257",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "Saves file to local disk",
+        "height": 100,
+        "width": 180,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "6cb2f6d3-e71d-472a-a53e-f3200e798444",
+      "name": "Sticky Note4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "65f0a399-378c-4d7f-ad45-25d2db8534fb",
+  "meta": {
+    "instanceId": "0727d2a42465e9fb3821554abb8f1eb3d2b38b5e54ecab15a35f94639ab1c795"
+  },
+  "id": "jXTJZRNVSTAISImY",
+  "tags": []
+}

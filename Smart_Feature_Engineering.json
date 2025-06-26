@@ -1,0 +1,300 @@
+{
+  "name": "Smart Feature Engineering",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "647e7c83-5170-4791-bf03-74cebf6245be",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/data/bank_dataset.csv",
+        "options": {
+          "fileName": "bank_dataset.csv"
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "id": "b22a5c39-4b75-4c5d-8511-27a5d0f182c8",
+      "name": "Read/Write Files from Disk",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/feature-importances",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "f974b982-0e4a-4595-a939-430f8f33a369",
+      "name": "HTTP Request",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a data scientist.\n\nThe following is a list of feature importances from a credit risk model:\n\n{{ $json.importances.map(i => `${i.feature}: ${i.importance.toFixed(5)}`).join(\"\\n\") }}\n\nFor each feature:\n- Explain why it might influence default risk\n- Describe what a high or low value implies\n- Keep explanations clear and concise for a business audience\n",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=You are a data scientist.\n\nThe following is a list of feature importances from a credit risk model:\n\n{{ $json.importances.map(i => `${i.feature}: ${i.importance.toFixed(5)}`).join(\"\\n\") }}\n\nFor each feature:\n- Explain why it might influence default risk\n- Describe what a high or low value implies\n- Keep explanations clear and concise for a business audience\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        660,
+        0
+      ],
+      "id": "677e5655-5a4d-4a96-844e-113114c8200e",
+      "name": "Basic LLM Chain",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-1.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        748,
+        220
+      ],
+      "id": "0c7c495d-89d7-44f1-8fc7-008434e22bcd",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "7unRmudEqMaGf3qU",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "text",
+        "binaryPropertyName": "feature_summary",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1036,
+        0
+      ],
+      "id": "7ce794ab-bfa8-4c98-8860-cf592d7ca6cf",
+      "name": "Convert to File",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/data/feature_summary",
+        "dataPropertyName": "feature_summary",
+        "options": {
+          "append": false
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1256,
+        0
+      ],
+      "id": "e1920679-f2fb-4325-833b-d3aa4a0582e9",
+      "name": "Read/Write Files from Disk1"
+    },
+    {
+      "parameters": {
+        "content": "Load CSV file containing loan/customer data",
+        "height": 100,
+        "width": 180,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        -80
+      ],
+      "id": "d78daf05-7b16-423a-8569-efd4596c3139",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Sends CSV to FastAPI to compute feature importances",
+        "height": 100,
+        "width": 180,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        400,
+        -80
+      ],
+      "id": "1a691d40-dcd2-40bf-823b-1b74b68f8625",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Asks Gemini to interpret model results for business",
+        "height": 100,
+        "width": 180,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        680,
+        -80
+      ],
+      "id": "ee1b2e3e-8875-4661-9b34-60b96bc7b3cc",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "Converts results to text file",
+        "height": 100,
+        "width": 180,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        -80
+      ],
+      "id": "37a502ad-2d34-4917-85e3-d69c803641bc",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "Saves file to local disk",
+        "height": 100,
+        "width": 180,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1220,
+        -80
+      ],
+      "id": "6ffee7c3-a4a6-4e0b-b9e0-b8ee01f8da1c",
+      "name": "Sticky Note4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c91f2e11-a8df-4745-95c0-9e6d312747ac",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0727d2a42465e9fb3821554abb8f1eb3d2b38b5e54ecab15a35f94639ab1c795"
+  },
+  "id": "vItqebTQf2HRF77s",
+  "tags": []
+}
