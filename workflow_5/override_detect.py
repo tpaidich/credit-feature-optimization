@@ -23,7 +23,7 @@ def analyze_overrides(file_path):
 
     output = {
         "summary": summary,
-        "monthly_trend": monthly_override.to_dict(orient="records"),
+        #"monthly_trend": monthly_override.to_dict(orient="records"),
         "officer_outliers": outliers.to_dict(orient="records")
     }
 

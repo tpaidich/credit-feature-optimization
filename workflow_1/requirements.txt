@@ -3,3 +3,6 @@ uvicorn
 pandas
 scikit-learn
 python-multipart
+numpy
+json
+shap
