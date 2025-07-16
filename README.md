@@ -35,7 +35,7 @@ docker run -it --name feature-api-demo -p 8000:8000 feature-api
 
 ---
 
-## ⚙Running n8n
+## Running n8n
 
 ### 1. Create the n8n Container
 
