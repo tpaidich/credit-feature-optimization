@@ -1,0 +1,24 @@
+{
+  "name": "n8n_data",
+  "version": "1.0.0",
+  "description": "This repository contains a set of **agentic AI-powered workflows** for smart feature engineering, interpretation, and monitoring in credit portfolio optimization. Each workflow uses:",
+  "main": "save-server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tpaidich/credit-feature-optimization.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/tpaidich/credit-feature-optimization/issues"
+  },
+  "homepage": "https://github.com/tpaidich/credit-feature-optimization#readme",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

@@ -1,0 +1,801 @@
+{
+  "name": "Model",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a senior credit risk analyst and financial data scientist. Your task is to analyze and summarize five components of a credit risk monitoring report using the provided data.\n\n🎯 Objective: Help risk and modeling teams interpret this data, understand underlying behavior, and take action where necessary.\n\n🧠 Tone: Clear, concise, and business-oriented — suitable for both technical and non-technical stakeholders.\n\n🛠 Format: Output should suitable for a Google Document, with professional headers, spacing, bulleted lists for insights, bold text for emphasis, and a final section with recommendations.\n\n\n⚠️ Avoid repeating raw data unless useful for explanation. Focus on interpretation and implications. Do not include the date you have written the report.\n\n\n1. Feature Importances from a Credit Risk Model\n\n{{ JSON.stringify($json.data[0].importances)}}\n\nFor each feature:\n\nWhy does it influence credit default risk?\n\nWhat does a high or low value imply?\n\nWhat’s the practical takeaway for analysts or modelers?\n\n\n2. Economic Downturn Behavior\n\nHere are some statistics about default rates during downturns:\n\n* Downturn average default rate: {{ $json.data[1].downturn_avg_default_rate }}\n* Baseline (non-downturn) default rate: {{ $json.data[1].baseline_default_rate }}\n* Worst downturn date: {{ $json.data[1].worst_downturn_date }}\n* Worst default rate during downturn: {{ $json.data[1].worst_downturn_default }}\n\nDiscuss:\n\nWhat does this say about how defaults behave in downturns?\n\nWhy is identifying the worst period useful?\n\nHow can modelers use this info in stress testing or model calibration?\n\n\n3. Threshold Shifts and Alerts\n\nHere is the latest dynamic threshold and alert information for retail and commercial portfolios:\n{{JSON.stringify( $json.data[2].alert_summary_statistics )}}\n{{JSON.stringify( $json.data[2].thresholds_mean_by_portfolio[0] )}}\n{{JSON.stringify( $json.data[2].thresholds_mean_by_portfolio[1] )}}\n\nExplain:\n\nHow have thresholds changed?\n\nWhat do alert trends say about portfolio risk behavior?\n\nAre commercial and retail profiles diverging?\n\nWhat are the risk implications of recent alert patterns?\n\n\n\n4. Model Stability Backtesting Results\n\nKey stability metrics from longitudinal testing:\n\n* Periods flagged as unstable: {{ $json.data[4].summary.periods_flagged }}\n* Most unstable month: {{ $json.data[4].summary.most_unstable_month }}\n* Least unstable month: {{ $json.data[4].summary.least_unstable_month }}\n* Max rolling standard deviation: {{ $json.data[4].summary.max_std }}\n* Min rolling standard deviation: {{ $json.data[4].summary.min_std }}\n\nSummarize:\n\nWhen was the model most and least stable?\n\nWhat does the volatility range imply about performance?\n\nWhy do unstable periods matter for long-term validation?\n\nWhat steps should model governance teams take?\n\n\n5. Model Override Audit Insights\n\nOverride audit summary:\n{{JSON.stringify( $json.data[3].summary) }}\n\nAnalyze:\n\nHow effective is override governance?\n\nAre there any unusual override patterns or risks?\n\nWhy is it important to monitor overrides longitudinally?\n\nAre policy or officer-level interventions needed?\n\n\n\n\n\n",
+        "batching": {
+          "delayBetweenBatches": 30
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -1260,
+        400
+      ],
+      "id": "91a1d79e-7716-4666-b088-92893345fe5d",
+      "name": "Basic LLM Chain",
+      "retryOnFail": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "numberInputs": 5
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1680,
+        160
+      ],
+      "id": "a48af5e1-d942-40dc-b263-70788449946b",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -1480,
+        200
+      ],
+      "id": "b33dd29c-a718-46e4-8f27-dcf91f7917e6",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ZHVlILDqv2vu800LlfHOocp1WVZx8iEI-mo7F4VjpJs",
+          "mode": "list",
+          "cachedResultName": "bankdataset",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZHVlILDqv2vu800LlfHOocp1WVZx8iEI-mo7F4VjpJs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 369987563,
+          "mode": "list",
+          "cachedResultName": "bank_dataset_timeseries",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZHVlILDqv2vu800LlfHOocp1WVZx8iEI-mo7F4VjpJs/edit#gid=369987563"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -2380,
+        200
+      ],
+      "id": "cc846e35-0d2c-48a0-9ebd-fc70eff099ee",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9GZJw2A1ItmbLXlw",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2560,
+        200
+      ],
+      "id": "01395105-d35e-4b7d-899e-b7f42d140a55",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -2180,
+        200
+      ],
+      "id": "1c3816d0-031f-46e6-9232-d01ef0366ab6",
+      "name": "Convert to File1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8005/feature-importances",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1920,
+        -200
+      ],
+      "id": "eb215a2a-e2fc-4414-8fe7-352db92faa94",
+      "name": "Compute feature importances",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8001/downturn-summary",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1920,
+        0
+      ],
+      "id": "ec907a30-d0ca-428d-af1c-d38d590e0da0",
+      "name": "Summarize periods of economic downturn"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8004/threshold-summary",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1920,
+        200
+      ],
+      "id": "eefd1d0f-6fb9-4ce9-90db-b2fc61a6ca1c",
+      "name": "Compute thresholds and alerts"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8002/override-detection",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1920,
+        400
+      ],
+      "id": "24cd190b-bcd3-4e5d-b87e-8393f547baf9",
+      "name": "Detect patterns in overrides"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8003/model-stability",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1920,
+        600
+      ],
+      "id": "052ce286-06cf-49ea-8a40-7f71b250363e",
+      "name": "Compute model stability"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.id[0] }}",
+        "simple": false,
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $json.text[0] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        -444,
+        50
+      ],
+      "id": "5e798404-4463-4339-913a-aebf969e3ca3",
+      "name": "Update a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "vED1eYcMsz6lo6YB",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Start the workflow",
+        "height": 100,
+        "width": 160,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2600,
+        360
+      ],
+      "typeVersion": 1,
+      "id": "5c2fc65b-89c0-424a-9a9a-ee878f7bd737",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Import the data and convert for processing. Create document for report",
+        "height": 120,
+        "width": 380,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2420,
+        -20
+      ],
+      "typeVersion": 1,
+      "id": "beeeb369-a4ea-4798-bb8f-0553582c5b62",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Simultaneously run Python scripts for 5 use-cases",
+        "height": 100,
+        "width": 380,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2040,
+        -320
+      ],
+      "typeVersion": 1,
+      "id": "d280142f-c702-4c60-8d46-8c98239e029e",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Append and aggregate all outputs",
+        "height": 140,
+        "width": 200,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1540,
+        40
+      ],
+      "typeVersion": 1,
+      "id": "ec785285-ce5e-4bf5-960f-9adf4f31eb3f",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Call LLM to explain and summarize",
+        "height": 80,
+        "width": 360,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1080,
+        520
+      ],
+      "typeVersion": 1,
+      "id": "0af50890-1eeb-46b8-9df9-57e263180a37",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Create a document",
+        "height": 80,
+        "width": 220,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1240,
+        -100
+      ],
+      "typeVersion": 1,
+      "id": "f0291e96-2172-4d9d-8fd5-856b288005b4",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "id"
+            },
+            {
+              "fieldToAggregate": "text"
+            },
+            {
+              "fieldToAggregate": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -664,
+        150
+      ],
+      "id": "c78ca2ef-f14b-4c9d-a81d-058e14a86db9",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1180,
+        620
+      ],
+      "id": "66eccccc-d7da-4890-9419-20eaec3e64ce",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "0CcU94ew4wbavMGB",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -884,
+        150
+      ],
+      "id": "63fc038e-4e58-4409-b063-a975fccba063",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "path": "test-app",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -2580,
+        860
+      ],
+      "id": "65090be0-6704-4082-aee2-61dce5a642e2",
+      "name": "Webhook1",
+      "webhookId": "d2ee3943-b714-475d-b33a-8118af88519b"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json.data[0];\nconst finalText = $input.first().json.text[0];\n\nconst intermediateArray = [\n  {\n    id: 'node1',\n    name: 'Smart Feature Engineering',\n    output: {\n      importances: data[0]\n    }\n  },\n  {\n    id: 'node2',\n    name: 'Determine Periods of Economic Downturn',\n    output: data[1]\n  },\n  {\n    id: 'node3',\n    name: 'Model Monitoring Thresholds',\n    output: data[2]\n  },\n  {\n    id: 'node4',\n    name: 'Analyze Model Stability',\n    output: data[4]\n  },\n  {\n    id: 'node5',\n    name: 'Detect Pattern in Officer Overrides',\n    output: data[3]\n  }\n];\n\nreturn [\n  {\n    json: {\n      intermediateOutputs: intermediateArray,\n      finalOutput: {\n        title: \"Final Workflow Output\",\n        status: \"All steps completed successfully\",\n        result: finalText,\n        timestamp: new Date().toLocaleString()\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -444,
+        250
+      ],
+      "id": "295ff11c-689b-446d-8901-180c5df96e3e",
+      "name": "Code",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "folderId": "1l7BT0SMHnoz2zPoNuFWjwY5o73KhmBP4",
+        "title": "=Credit Portfolio Optimization Report  {{ new Date;}}"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        -1182,
+        0
+      ],
+      "id": "2207ef7f-c424-46bc-baac-8adca048a4d7",
+      "name": "Create a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "vED1eYcMsz6lo6YB",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Write to document",
+        "height": 80,
+        "width": 180,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -480,
+        -60
+      ],
+      "typeVersion": 1,
+      "id": "a732b7a9-ddca-4ca5-9d79-c2dc760b4dfa",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Send intermediate and final outputs to dahboard",
+        "width": 220,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -360,
+        420
+      ],
+      "typeVersion": 1,
+      "id": "9f6358af-4bf5-4512-baa6-81e8393b570c",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:3000/save",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "intermediateOutputs",
+              "value": "={{ $json.intermediateOutputs }}"
+            },
+            {
+              "name": "finalOutput",
+              "value": "={{ $json.finalOutput }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -224,
+        250
+      ],
+      "id": "f4f53074-7105-4853-991d-7ae3a9934b08",
+      "name": "HTTP Request",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"dashboardUrl\": \"http://localhost:3000/\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4,
+        250
+      ],
+      "id": "2aa85563-7172-44ce-afd9-dde2ed6f133e",
+      "name": "Edit Fields",
+      "alwaysOutputData": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a document",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Convert to File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File1": {
+      "main": [
+        [
+          {
+            "node": "Compute feature importances",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Summarize periods of economic downturn",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Compute thresholds and alerts",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Detect patterns in overrides",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Compute model stability",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute feature importances": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize periods of economic downturn": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Compute thresholds and alerts": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Detect patterns in overrides": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Compute model stability": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Update a document": {
+      "main": [
+        []
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Update a document",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        []
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a document": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1dc480f8-21ca-4a4b-adf2-8e4ce8690e08",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2e4b5f37845752d62a83918b1e040eadaab3986d03191c490cd5e41cf8de3246"
+  },
+  "id": "1erfGkm7vjvfDBVL",
+  "tags": []
+}
